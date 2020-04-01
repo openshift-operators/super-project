@@ -1,0 +1,12 @@
+#apiVersion: project.openshift.io/v1
+#kind: Project
+#metadata:
+#  name: super-project-operator
+#spec: {}
+#status: {}
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: super-project-operator

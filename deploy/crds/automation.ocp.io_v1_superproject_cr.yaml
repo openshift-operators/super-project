@@ -1,0 +1,7 @@
+apiVersion: automation.ocp.io/v1
+kind: Superproject
+metadata:
+  name: example-superproject
+spec:
+  # Add fields here
+  size: 3

@@ -1,0 +1,60 @@
+- name: Deny any network traffic  by default
+  k8s:
+    state: present
+    definition:
+        kind: NetworkPolicy
+        apiVersion: networking.k8s.io/v1
+        metadata:
+          namespace: "{{ meta.name }}"
+          name: deny-by-default
+        spec:
+          podSelector: {}
+          policyTypes:
+            - Ingress
+
+- name: Allow  network traffic from  itself namespace
+  k8s:
+    state: present
+    definition:
+          kind: NetworkPolicy
+          apiVersion: networking.k8s.io/v1
+          metadata:
+            namespace: "{{ meta.name }}"
+            name: allow-same-namespace
+          spec:
+            podSelector: {}
+            policyTypes:
+              - Ingress
+            ingress:
+              - from:
+                  - podSelector: {}
+
+- name: Allow any network traffic from default namespace
+  k8s:
+    state: present
+    definition:
+          kind: NetworkPolicy
+          apiVersion: networking.k8s.io/v1
+          metadata:
+            namespace: "{{ meta.name }}"
+            name: allow-from-default-namespace
+          spec:
+            ingress:
+              - from:
+                  - namespaceSelector:
+                      matchLabels:
+                        name: default
+            podSelector: {}
+            policyTypes:
+              - Ingress
+
+- name: Allow any network traffic from default namespace
+  k8s:
+    state: present
+    definition: "{{ network_policy }}"
+  loop: "{{ lookup('template', 'allow-network-tarffic-from-namespaces.yaml') | from_yaml_all | list }}"
+  loop_control:
+      loop_var: network_policy
+  when: allow_from_projects | length != 0
+
+

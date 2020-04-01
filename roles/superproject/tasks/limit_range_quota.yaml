@@ -1,0 +1,88 @@
+- name: Project limit range
+  k8s:
+    state: present
+    definition:
+        kind: "LimitRange"
+        apiVersion: "v1"
+        metadata:
+          name: "resource-limits"
+          namespace: "{{ meta.name }}"
+        spec:
+          limits:
+            - type: "Pod"
+              max:
+                cpu: "{{ pod_max_request_cpu }}"
+                memory: "{{ pod_max_request_ram }}"
+              min:
+                cpu: "{{ pod_min_request_cpu }}"
+                memory: "{{ pod_min_request_ram }}"
+
+            - type: "Container"
+              max:
+                cpu: "{{ container_max_request_cpu }}"
+                memory: "{{ container_max_request_ram }}"
+              min:
+                cpu: "{{ container_min_request_cpu }}"
+                memory: "{{ container_min_request_ram }}"
+
+              default:
+                cpu: "{{ default_container_limit_cpu }}"
+                memory: "{{ default_container_limit_ram }}"
+
+              defaultRequest:
+                cpu: "{{ default_container_request_cpu }}"
+                memory: "{{ default_container_request_ram }}"
+
+            - type: openshift.io/Image
+              max:
+                storage: "{{ image_size }}"
+
+            - type: openshift.io/ImageStream
+              max:
+                openshift.io/image-tags: "{{ image_tags }}"
+                openshift.io/images: "{{ images }}"
+
+            - type: "PersistentVolumeClaim"
+              min:
+                storage: "{{ min_storage_request }}"
+              max:
+                storage: "{{ max_storage_request }}"
+
+- name: Project resource quota
+  k8s:
+    state: present
+    definition:
+        kind: "ResourceQuota"
+        apiVersion: "v1"
+        metadata:
+          name: "resource-quota"
+          namespace: "{{ meta.name }}"
+        spec:
+           hard:
+             pods: "{{ pods_count }}"
+             requests.cpu: "{{ cpu_requests }}"
+             requests.memory: "{{ ram_requests }}"
+             limits.cpu: "{{ cpu_limits }}"
+             limits.memory: "{{ ram_limits }}"
+             openshift.io/imagestreams: "{{ image_streams }}"
+             #Storage quota
+             persistentvolumeclaims: "{{ persistentvolumeclaims }}"
+             requests.storage: "{{ requests_storage }}"
+
+
+- name: Project resource quota for storage classes
+  k8s:
+    state: present
+    definition:
+      kind: "ResourceQuota"
+      apiVersion: "v1"
+      metadata:
+        name: "storage-classes-quota"
+        namespace: "{{ meta.name }}"
+      spec:
+        hard: "{{ storage_classes_quota }}"
+  when:  storage_classes_quota | length != 0
+
+
+
+

@@ -1,0 +1,6 @@
+---
+- version: v1
+  group: automation.ocp.io
+  kind: Superproject
+  reconcilePeriod:  120s
+  role: /opt/ansible/roles/superproject

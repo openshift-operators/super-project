@@ -1,0 +1,7 @@
+- block:
+    - name: Create ArgoCD project
+      k8s:
+        state: present
+        apply: yes
+        definition: "{{ lookup('template', 'argocd_project.yaml') | from_yaml }}"
+  when: create_argocd_project | bool

@@ -1,0 +1,8 @@
+meta:
+  name: demo-application-project
+
+project_admins:
+  - vivanov
+
+requests_storage: 60Gi
+use_root: yes

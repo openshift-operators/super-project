@@ -1,0 +1,42 @@
+#for OCP 4.X - image-registry.openshift-image-registry.svc:5000/super-project-operator/super-project-operator:latest
+
+---
+apiVersion: "image.openshift.io/v1"
+kind: ImageStream
+metadata:
+  namespace: super-project-operator
+  name: super-project-operator
+spec:
+  lookupPolicy:
+    local: true
+
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: super-project-operator
+  name: super-project-operator
+  namespace: super-project-operator
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "super-project-operator:latest"
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: https://gitlab.com/ansible-k8s-operators/super-project.git
+    type: Git
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: "build/Dockerfile"
+  successfulBuildsHistoryLimit: 5
+  triggers:
+    - type: ConfigChange

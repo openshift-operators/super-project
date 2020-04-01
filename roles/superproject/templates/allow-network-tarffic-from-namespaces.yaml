@@ -1,0 +1,15 @@
+{% for allow_from_project in allow_from_projects  %}
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: "{{ meta.name }}"
+  name: "allow-from-{{ allow_from_project }}-namespace"
+spec:
+  podSelector:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: "{{ allow_from_project }}"
+{% endfor %}

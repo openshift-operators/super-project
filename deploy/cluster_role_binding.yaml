@@ -1,0 +1,13 @@
+apiVersion: authorization.openshift.io/v1
+groupNames: null
+kind: ClusterRoleBinding
+metadata:
+  name: super-project-cluster-admin
+roleRef:
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: super-project
+    namespace: super-project-operator
+userNames:
+  - system:serviceaccount:super-project-operator:super-project

@@ -1,0 +1,6 @@
+- name: Test operator role
+  hosts: localhost
+  gather_facts: no
+  become: no
+  roles:
+    - superproject

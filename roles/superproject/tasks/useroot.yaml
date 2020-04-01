@@ -1,0 +1,59 @@
+- block:
+  - name: "Create useroot service account ( and dedicated SCC for him ) in  project:  {{ project_name }}"
+    k8s:
+      state: present
+      definition:
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: "{{ useroot_service_account_name }}"
+            namespace: "{{ meta.name }}"
+
+  - name: Create SCC to allow anyuid for dedicated service account
+    k8s:
+      state: present
+      definition:
+        kind: SecurityContextConstraints
+        metadata:
+          labels:
+            namespace: "{{ meta.name }}"
+            service_account: "{{ useroot_service_account_name }}"
+          annotations:
+            kubernetes.io/description: "SCC for service account useroot to run applications as root UID."
+          name: "{{ meta.name }}-useroot"
+        allowHostDirVolumePlugin: false
+        allowHostIPC: false
+        allowHostNetwork: false
+        allowHostPID: false
+        allowHostPorts: false
+        allowPrivilegeEscalation: true
+        allowPrivilegedContainer: false
+        allowedCapabilities: null
+        apiVersion: security.openshift.io/v1
+        defaultAddCapabilities: null
+        fsGroup:
+          type: RunAsAny
+        groups: []
+        priority: 10
+        readOnlyRootFilesystem: false
+        requiredDropCapabilities:
+          - MKNOD
+        runAsUser:
+          type: RunAsAny
+        seLinuxContext:
+          type: MustRunAs
+        supplementalGroups:
+          type: RunAsAny
+        users:
+          - "system:serviceaccount:{{ meta.name }}:{{ useroot_service_account_name }}"
+        volumes:
+          - configMap
+          - downwardAPI
+          - emptyDir
+          - persistentVolumeClaim
+          - projected
+          - secret
+  when: use_root | bool == true
+
+
+

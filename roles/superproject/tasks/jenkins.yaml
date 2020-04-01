@@ -1,0 +1,209 @@
+- block:
+  - name: Create Jenkins CI deployment
+    k8s:
+      state: present
+      apply: yes
+      definition:
+          apiVersion: v1
+          kind: DeploymentConfig
+          metadata:
+            name: "{{ jenkins_service_name }}"
+            namespace: "{{ meta.name }}"
+          spec:
+            replicas: 1
+            selector:
+              name: "{{ jenkins_service_name }}"
+            strategy:
+              type: Recreate
+            template:
+              metadata:
+                labels:
+                  name: "{{ jenkins_service_name }}"
+              spec:
+                containers:
+                  - name: jenkins
+                    env:
+                      - name: OPENSHIFT_ENABLE_OAUTH
+                        value: "{{ enable_oauth }}"
+
+                      - name: OPENSHIFT_ENABLE_REDIRECT_PROMPT
+                        value: "true"
+
+                      - name: DISABLE_ADMINISTRATIVE_MONITORS
+                        value: "{{ disable_administrative_monitors }}"
+
+                      - name: KUBERNETES_MASTER
+                        value: "https://{{ k8s_master_host }}:{{ k8s_master_port }}"
+
+                      - name: KUBERNETES_TRUST_CERTIFICATES
+                        value: "true"
+
+                      - name: JENKINS_SERVICE_NAME
+                        value: "{{ jenkins_service_name }}"
+
+                      - name: JNLP_SERVICE_NAME
+                        value: "{{ jnlp_service_name }}"
+
+                      - name: ENABLE_FATAL_ERROR_LOG_FILE
+                        value: "{{ enable_fatal_error_log_file }}"
+                    image: "{{ jenkins_image }}"
+
+                    imagePullPolicy: IfNotPresent
+                    livenessProbe:
+                      failureThreshold: 2
+                      httpGet:
+                        path: /login
+                        port: 8080
+                      initialDelaySeconds: 420
+                      periodSeconds: 360
+                      timeoutSeconds: 240
+                    readinessProbe:
+                      httpGet:
+                        path: /login
+                        port: 8080
+                      initialDelaySeconds: 3
+                      timeoutSeconds: 240
+                    resources:
+                      limits:
+                        cpu: "{{ jenkins_limit_cpu }}"
+                        memory: "{{ jenkins_limit_mem }}"
+                      requests:
+                        cpu: "{{ jenkins_request_cpu }}"
+                        memory: "{{ jenkins_request_mem }}"
+
+                    securityContext:
+                      capabilities: {}
+                      privileged: false
+                    terminationMessagePath: /dev/termination-log
+                    volumeMounts:
+                      - mountPath: /var/lib/jenkins
+                        name: "{{ jenkins_service_name }}-data"
+
+                dnsPolicy: ClusterFirst
+                restartPolicy: Always
+                serviceAccountName: "{{ jenkins_service_name }}"
+                volumes:
+                  - name: "{{ jenkins_service_name }}-data"
+                    persistentVolumeClaim:
+                      claimName: "{{ jenkins_service_name }}-data"
+            triggers:
+                - type: ConfigChange
+
+
+  - name: Create Jenkins JNLP kubernetes service
+    k8s:
+      state: present
+      apply: yes
+      definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            namespace: "{{ meta.name }}"
+            name: "{{ jnlp_service_name }}"
+          spec:
+            ports:
+              - name: agent
+                port: 50000
+                protocol: TCP
+                targetPort: 50000
+            selector:
+              name: "{{ jenkins_service_name }}"
+            sessionAffinity: None
+            type: ClusterIP
+
+
+
+  - name: Create Jenkins web interface kubernetes service
+    k8s:
+      state: present
+      apply: yes
+      definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            namespace: "{{ meta.name }}"
+            annotations:
+              service.alpha.openshift.io/dependencies: '[{"name": ""{{ jenkins_service_name }}"", "namespace": "", "kind": "Service"}]'
+              service.openshift.io/infrastructure: "true"
+            name:  "{{ jenkins_service_name }}"
+          spec:
+            ports:
+              - name: web
+                nodePort: 0
+                port: 80
+                protocol: TCP
+                targetPort: 8080
+            selector:
+              name: "{{ jenkins_service_name }}"
+            sessionAffinity: None
+            type: ClusterIP
+
+
+  - name: Create route for Jenkins UI
+    k8s:
+      state: present
+      apply: yes
+      definition:
+            apiVersion: v1
+            kind: Route
+            metadata:
+              namespace: "{{ meta.name }}"
+              annotations:
+                haproxy.router.openshift.io/timeout: 4m
+              name: "{{ jenkins_service_name }}"
+            spec:
+              tls:
+                insecureEdgeTerminationPolicy: Redirect
+                termination: edge
+              to:
+                kind: Service
+                name: "{{ jenkins_service_name }}"
+
+  - name: Create Jenkins service account
+    k8s:
+      state: present
+      apply: yes
+      definition: "{{ lookup('template', 'jenkins-service-account.yaml') | from_yaml }}"
+
+
+  - name: Role binding for Jenkins service account
+    k8s:
+      state: present
+      apply: yes
+      definition:
+          apiVersion: v1
+          kind: RoleBinding
+          metadata:
+            namespace: "{{ meta.name }}"
+            name: "{{ jenkins_service_name }}_edit"
+          roleRef:
+            name: edit
+          subjects:
+            - kind: ServiceAccount
+              name: "{{ jenkins_service_name }}"
+
+
+  - name: Create PVC for Jenkins
+    k8s:
+      state: present
+      namespace: "{{ meta.name }}"
+      api_version: "v1"
+      definition:
+        kind: PersistentVolumeClaim
+        metadata:
+          name: "{{ jenkins_service_name }}-data"
+        spec:
+          storageClassName: "{{ jenkins_storage_class_name }}"
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ jenkins_volume_capacity }}"
+
+
+  when: with_jenkins | bool == true
+
+
+
+
+

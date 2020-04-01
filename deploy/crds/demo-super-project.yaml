@@ -1,0 +1,21 @@
+---
+apiVersion: automation.ocp.io/v1
+kind: Superproject
+metadata:
+  name: demo-application-project
+spec:
+  project_admins:
+    - vivanov
+  requests_storage: 60Gi
+
+---
+apiVersion: automation.ocp.io/v1
+kind: Superproject
+metadata:
+  name: ulk-dev
+spec:
+  project_admins:
+    - vivanov
+  requests_storage: 60Gi
+  allow_from_projects:
+    - argocd

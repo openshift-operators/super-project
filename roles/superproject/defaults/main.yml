@@ -1,0 +1,105 @@
+---
+verify_ssl: no
+image_size: 2048Mi
+images: 50
+image_tags: 10
+
+description: ""
+displayname: ""
+selector: ""
+
+allow_from_projects: []
+
+project_admins: []
+project_viewers: []
+
+egressips: []
+
+use_root: no
+
+labels: []
+default_router: "yes"
+
+#Resource  requests limits
+#Pod CPU
+pod_max_request_cpu: 8
+pod_min_request_cpu: 10m
+#Pod RAM
+pod_max_request_ram: 32Gi
+pod_min_request_ram: 64Mi
+
+#
+ldap_group_prefix: ''
+#Container CPU
+container_max_request_cpu: 8
+container_min_request_cpu: 10m
+#Container RAM
+container_max_request_ram: 32Gi
+container_min_request_ram: 64Mi
+
+#Default container limits
+#Default CPU
+default_container_limit_cpu: 200m
+default_container_request_cpu: 100m
+#Default RAM
+default_container_limit_ram: 256Mi
+default_container_request_ram: 128Mi
+
+#This for ephemerial storage feature
+#pod_ephemeral_storage: 512Mi
+#container_ephemeral_storage: 512Mi
+
+min_storage_request: 1Gi
+max_storage_request: 100Gi
+
+
+
+#Quotas
+pods_count: 20
+cpu_requests: 4
+cpu_limits: 8
+ram_requests: 4Gi
+ram_limits: 8Gi
+image_streams: 20
+#Storage quotas
+persistentvolumeclaims: 20
+requests_storage: 10Gi
+
+
+storage_classes_quota: {}
+#- name: bronze.nfs
+#  quota: 10Gi
+
+useroot_service_account_name: useroot
+
+project_template: project.yaml
+
+useroot_template_name: useroot.yaml
+limits_template: limit_range.yaml
+network_policy_template: network-policy.yaml
+
+apply_network_policy: yes
+create_argocd_project: yes
+
+######Jenkins
+jenkins_image: "registry.redhat.io/openshift3/jenkins-2-rhel7:v3.11.146-1"
+
+jenkins_service_name: "jenkins"
+jnlp_service_name: "jenkins-jnlp"
+
+jenkins_storage_class_name: "glusterfs-storage-block"
+jenkins_volume_capacity: 10Gi
+
+enable_fatal_error_log_file:  "false"
+disable_administrative_monitors: "false"
+enable_oauth: "true"
+
+k8s_master_host: "kubernetes.default"
+k8s_master_port: 443
+
+jenkins_limit_cpu: 1
+jenkins_limit_mem: 2Gi
+
+jenkins_request_cpu: 500m
+jenkins_request_mem: 1Gi
+
