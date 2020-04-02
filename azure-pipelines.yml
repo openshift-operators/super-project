@@ -15,7 +15,7 @@ steps:
     displayName: "Build super-project operator image"
     inputs:
       Dockerfile: "**/build/Dockerfile"
-      buildContext: "../"
+      buildContext: "."
       command: buildAndPush
       repository: openshift-operators/super-project
       tags: |
