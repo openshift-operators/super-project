@@ -1,5 +1,6 @@
 trigger:
 - master
+- secrets-handler
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -12,6 +13,7 @@ steps:
        containerRegistry: quay.io/openshift-operators
 
   - task: Docker@2
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     displayName: "Build super-project operator image"
     inputs:
       Dockerfile: "**/build/Dockerfile"
@@ -22,4 +24,13 @@ steps:
         latest
 
 
-
+  - task: Docker@2
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/secrets-handler'))
+    displayName: "Build super-project operator image"
+    inputs:
+      Dockerfile: "**/build/Dockerfile"
+      buildContext: "."
+      command: buildAndPush
+      repository: openshift-operators/super-project
+      tags: |
+        secrets-handler
