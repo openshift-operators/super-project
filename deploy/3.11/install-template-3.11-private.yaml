@@ -179,6 +179,8 @@ objects:
       git:
         ref: ${GIT_BRANCH}
         uri: ${GIT_REPO}
+      sourceSecret:
+        name: ${GIT_CLONE_SECRET}
       type: Git
     strategy:
       type: Docker
@@ -248,3 +250,6 @@ parameters:
   - name: GIT_BRANCH
     required: true
     value: master
+
+  - name: GIT_CLONE_SECRET
+    required: true

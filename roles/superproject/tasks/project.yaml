@@ -23,6 +23,7 @@
       spec: {}
       status: {}
 
+
 - name: Create k8s namespace
   k8s:
     state: present
@@ -35,7 +36,6 @@
           openshift.io/node-selector: "{{ selector }}"
         name: "{{ meta.name }}"
         labels: "{{ all_ns_labels }}"
-
 
 
 - name: Configure Egress IP for project
@@ -196,16 +196,16 @@
       definition:
         apiVersion: authorization.openshift.io/v1
         groupNames:
-          - "{{ ldap_group_prefix }}-{{ meta.name }}-admins"
+          - "{{ cluster_name }}_{{ meta.name }}_admins"
         kind: RoleBinding
         metadata:
-          name: "{{ ldap_group_prefix }}-{{ meta.name }}-admins"
+          name: "{{ cluster_name }}_{{ meta.name }}_admins"
           namespace: "{{ meta.name }}"
         roleRef:
           name: admin
         subjects:
           - kind: Group
-            name: "{{ ldap_group_prefix }}-{{ meta.name }}-admins"
+            name: "{{ cluster_name }}_{{ meta.name }}_admins"
 
   - name: Rolebinding for viewers group synced from LDAP catalog
     k8s:
@@ -214,14 +214,14 @@
       definition:
         apiVersion: authorization.openshift.io/v1
         groupNames:
-          - "{{ ldap_group_prefix }}-{{ meta.name }}-viewers"
+          - "{{ cluster_name }}_{{ meta.name }}_viewers"
         kind: RoleBinding
         metadata:
-          name: "{{ ldap_group_prefix }}-{{ meta.name }}-viewers"
+          name: "{{ cluster_name }}_{{ meta.name }}_viewers"
           namespace: "{{ meta.name }}"
         roleRef:
           name: admin
         subjects:
           - kind: Group
-            name: "{{ ldap_group_prefix }}-{{ meta.name }}-viewers"
-  when: ldap_group_prefix != ''
+            name: "{{ cluster_name }}_{{ meta.name }}_viewers"
+  when: cluster_name != ''

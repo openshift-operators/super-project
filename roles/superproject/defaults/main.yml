@@ -1,12 +1,18 @@
 ---
 verify_ssl: no
-image_size: 2048Mi
+image_size: 4096Mi
 images: 50
 image_tags: 10
 
 description: ""
 displayname: ""
 selector: ""
+
+pull_secrets_from_vault: yes
+
+
+vault_addr:
+vault_token:
 
 allow_from_projects: []
 
@@ -29,7 +35,7 @@ pod_max_request_ram: 32Gi
 pod_min_request_ram: 64Mi
 
 #
-ldap_group_prefix: ''
+#ldap_group_prefix: ''
 #Container CPU
 container_max_request_cpu: 8
 container_min_request_cpu: 10m
@@ -82,6 +88,9 @@ apply_network_policy: yes
 create_argocd_project: yes
 
 ######Jenkins
+with_jenkins: no
+ephemeral_jenkins: no
+
 jenkins_image: "registry.redhat.io/openshift3/jenkins-2-rhel7:v3.11.146-1"
 
 jenkins_service_name: "jenkins"
@@ -102,4 +111,6 @@ jenkins_limit_mem: 2Gi
 
 jenkins_request_cpu: 500m
 jenkins_request_mem: 1Gi
-
+#Labels for add project to servicemesh
+#  "kiali.io/member-of": "istio-system",
+#  "maistra.io/member-of": "istio-system",

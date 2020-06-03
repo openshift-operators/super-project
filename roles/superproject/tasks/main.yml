@@ -1,10 +1,18 @@
 ---
+
+- set_fact:
+    cluster_name: "{{ lookup('env', 'CLUSTER_NAME') | default('') }}"
+
 - include_tasks: project.yaml
 - include_tasks: useroot.yaml
 - include_tasks: limit_range_quota.yaml
 - include_tasks: network_policy.yaml
-- include_tasks: pull_infra_secrets.yaml
+#- include_tasks: pull_infra_secrets.yaml
 - include_tasks: argocd_project.yaml
+
 - include_tasks: jenkins.yaml
+  when: ephemeral_jenkins | bool == false
+- include_tasks: jenkins_ephemeral.yaml
+  when: ephemeral_jenkins | bool == true
 
 
