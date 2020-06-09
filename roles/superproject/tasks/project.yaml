@@ -5,8 +5,11 @@
 
 - set_fact:
         all_ns_labels: "{{ infra_labels | combine(labels) }}"
-#        description: "{{ meta.name }}"
-#        displayname: "{{ meta.name }}"
+
+- set_fact:
+       ns_annotations:
+               openshift.io/node-selector: "{{ selector }}"
+  when: selector != null
 
 - name: OpenShift project
   k8s:
@@ -32,8 +35,7 @@
       apiVersion: v1
       kind: Namespace
       metadata:
-        annotations:
-          openshift.io/node-selector: "{{ selector }}"
+        annotations: "{{ ns_annotations }}"
         name: "{{ meta.name }}"
         labels: "{{ all_ns_labels }}"
 

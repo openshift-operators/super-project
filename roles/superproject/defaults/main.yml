@@ -6,7 +6,9 @@ image_tags: 10
 
 description: ""
 displayname: ""
-selector: ""
+selector: null
+
+ns_annotations: {}
 
 pull_secrets_from_vault: yes
 
