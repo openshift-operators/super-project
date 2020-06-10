@@ -1,3 +1,15 @@
+- name: Lable default namespace
+  k8s:
+    state: present
+    apply: yes
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: default
+        labels:
+            name: "default"
+
 - name: Deny any network traffic  by default
   k8s:
     state: present

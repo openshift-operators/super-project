@@ -9,7 +9,8 @@
 - set_fact:
        ns_annotations:
                openshift.io/node-selector: "{{ selector }}"
-  when: selector != null
+  when: selector != 'cluster-default'
+
 
 - name: OpenShift project
   k8s:

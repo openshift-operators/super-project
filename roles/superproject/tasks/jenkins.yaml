@@ -1,93 +1,75 @@
 - block:
-  - name: Create Jenkins CI deployment
+  - block:
+    - k8s_info:
+        api_version: v1
+        kind: ConfigMap
+        name: jenkins-env
+        namespace: "{{ meta.name }}"
+      register: jks_env_cm
+
+    - name: Create Jenkins ConfigMap with project ENV variables
+      k8s:
+        state: present
+        apply: yes
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: jenkins-env
+            namespace: "{{ meta.name }}"
+            labels:
+              name: jenkins-env
+              app: jenkins
+          data: {}
+      when:  jks_env_cm.resources | length == 0
+    when: jenkins_env | bool == true
+
+  - name: Create PVC for Jenkins
+    k8s:
+      state: present
+      namespace: "{{ meta.name }}"
+      api_version: "v1"
+      definition:
+        kind: PersistentVolumeClaim
+        metadata:
+          name: "{{ jenkins_service_name }}-data"
+        spec:
+          storageClassName: "{{ jenkins_storage_class_name }}"
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: "{{ jenkins_volume_capacity }}"
+    when:  ephemeral_jenkins | bool == false
+
+  - name: Create Jenkins service account
+    k8s:
+      state: present
+      apply: yes
+      definition: "{{ lookup('template', 'jenkins-service-account.yaml') | from_yaml }}"
+
+
+  - name: Role binding for Jenkins service account
     k8s:
       state: present
       apply: yes
       definition:
-          apiVersion: v1
-          kind: DeploymentConfig
-          metadata:
+        apiVersion: authorization.openshift.io/v1
+        kind: RoleBinding
+        metadata:
+          namespace: "{{ meta.name }}"
+          name: "{{ jenkins_service_name }}_edit"
+        roleRef:
+          name: edit
+        subjects:
+          - kind: ServiceAccount
             name: "{{ jenkins_service_name }}"
-            namespace: "{{ meta.name }}"
-          spec:
-            replicas: 1
-            selector:
-              name: "{{ jenkins_service_name }}"
-            strategy:
-              type: Recreate
-            template:
-              metadata:
-                labels:
-                  name: "{{ jenkins_service_name }}"
-              spec:
-                containers:
-                  - name: jenkins
-                    env:
-                      - name: OPENSHIFT_ENABLE_OAUTH
-                        value: "{{ enable_oauth }}"
 
-                      - name: OPENSHIFT_ENABLE_REDIRECT_PROMPT
-                        value: "true"
-
-                      - name: DISABLE_ADMINISTRATIVE_MONITORS
-                        value: "{{ disable_administrative_monitors }}"
-
-                      - name: KUBERNETES_MASTER
-                        value: "https://{{ k8s_master_host }}:{{ k8s_master_port }}"
-
-                      - name: KUBERNETES_TRUST_CERTIFICATES
-                        value: "true"
-
-                      - name: JENKINS_SERVICE_NAME
-                        value: "{{ jenkins_service_name }}"
-
-                      - name: JNLP_SERVICE_NAME
-                        value: "{{ jnlp_service_name }}"
-
-                      - name: ENABLE_FATAL_ERROR_LOG_FILE
-                        value: "{{ enable_fatal_error_log_file }}"
-                    image: "{{ jenkins_image }}"
-
-                    imagePullPolicy: IfNotPresent
-                    livenessProbe:
-                      failureThreshold: 2
-                      httpGet:
-                        path: /login
-                        port: 8080
-                      initialDelaySeconds: 420
-                      periodSeconds: 360
-                      timeoutSeconds: 240
-                    readinessProbe:
-                      httpGet:
-                        path: /login
-                        port: 8080
-                      initialDelaySeconds: 3
-                      timeoutSeconds: 240
-                    resources:
-                      limits:
-                        cpu: "{{ jenkins_limit_cpu }}"
-                        memory: "{{ jenkins_limit_mem }}"
-                      requests:
-                        cpu: "{{ jenkins_request_cpu }}"
-                        memory: "{{ jenkins_request_mem }}"
-
-                    securityContext:
-                      capabilities: {}
-                      privileged: false
-                    terminationMessagePath: /dev/termination-log
-                    volumeMounts:
-                      - mountPath: /var/lib/jenkins
-                        name: "{{ jenkins_service_name }}-data"
-
-                dnsPolicy: ClusterFirst
-                restartPolicy: Always
-                serviceAccountName: "{{ jenkins_service_name }}"
-                volumes:
-                  - name: "{{ jenkins_service_name }}-data"
-                    persistentVolumeClaim:
-                      claimName: "{{ jenkins_service_name }}-data"
-            triggers:
-                - type: ConfigChange
+  - name: Create Jenkins deploymentconfig
+    k8s:
+      state: present
+      apply: yes
+      definition: "{{ lookup('template', 'jenkins-dc.yaml') | from_yaml }}"
 
 
   - name: Create Jenkins JNLP kubernetes service
@@ -159,46 +141,6 @@
                 kind: Service
                 name: "{{ jenkins_service_name }}"
 
-  - name: Create Jenkins service account
-    k8s:
-      state: present
-      apply: yes
-      definition: "{{ lookup('template', 'jenkins-service-account.yaml') | from_yaml }}"
-
-
-  - name: Role binding for Jenkins service account
-    k8s:
-      state: present
-      apply: yes
-      definition:
-          apiVersion: v1
-          kind: RoleBinding
-          metadata:
-            namespace: "{{ meta.name }}"
-            name: "{{ jenkins_service_name }}_edit"
-          roleRef:
-            name: edit
-          subjects:
-            - kind: ServiceAccount
-              name: "{{ jenkins_service_name }}"
-
-
-  - name: Create PVC for Jenkins
-    k8s:
-      state: present
-      namespace: "{{ meta.name }}"
-      api_version: "v1"
-      definition:
-        kind: PersistentVolumeClaim
-        metadata:
-          name: "{{ jenkins_service_name }}-data"
-        spec:
-          storageClassName: "{{ jenkins_storage_class_name }}"
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: "{{ jenkins_volume_capacity }}"
 
 
   when: with_jenkins | bool == true

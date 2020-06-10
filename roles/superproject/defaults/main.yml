@@ -6,8 +6,7 @@ image_tags: 10
 
 description: ""
 displayname: ""
-selector: null
-
+selector: cluster-default
 ns_annotations: {}
 
 pull_secrets_from_vault: yes
@@ -92,7 +91,7 @@ create_argocd_project: yes
 ######Jenkins
 with_jenkins: no
 ephemeral_jenkins: no
-
+jenkins_env: no
 jenkins_image: "registry.redhat.io/openshift3/jenkins-2-rhel7:v3.11.146-1"
 
 jenkins_service_name: "jenkins"

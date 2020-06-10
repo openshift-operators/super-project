@@ -1,0 +1,22 @@
+- name: Check if webhook secret already exists
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: webhook
+    namespace: "{{ meta.name }}"
+  register: webhook_secret
+
+- name: Create webhook secret if it doesn't exists
+  k8s:
+    state: present
+    apply: yes
+    definition:
+      apiVersion: v1
+      data:
+        WebHookSecretKey:  "{{ lookup('password', '/dev/null chars=ascii_letters,digits') | b64encode }}"
+      kind: Secret
+      metadata:
+        name: webhook
+        namespace: "{{ meta.name }}"
+      type: Opaque
+  when:  webhook_secret.resources | length == 0
