@@ -62,15 +62,15 @@ max_storage_request: 100Gi
 
 
 #Quotas
-pods_count: 20
+pods_count: 100
 cpu_requests: 4
 cpu_limits: 8
 ram_requests: 4Gi
 ram_limits: 8Gi
-image_streams: 20
+image_streams: 50
 #Storage quotas
 persistentvolumeclaims: 20
-requests_storage: 10Gi
+requests_storage: 100Gi
 
 
 storage_classes_quota: {}
