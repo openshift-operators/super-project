@@ -1,8 +1,8 @@
 ---
 verify_ssl: no
-image_size: 4096Mi
-images: 50
-image_tags: 10
+image_size: 10Gi
+images: 1000
+image_tags: 1000
 
 description: ""
 displayname: ""
@@ -57,19 +57,19 @@ default_container_request_ram: 128Mi
 #container_ephemeral_storage: 512Mi
 
 min_storage_request: 1Gi
-max_storage_request: 100Gi
+max_storage_request: 1024Gi
 
 
 
 #Quotas
-pods_count: 100
+pods_count: 1000
 cpu_requests: 4
 cpu_limits: 8
 ram_requests: 4Gi
 ram_limits: 8Gi
-image_streams: 50
+image_streams: 1000
 #Storage quotas
-persistentvolumeclaims: 20
+persistentvolumeclaims: 200
 requests_storage: 100Gi
 
 
