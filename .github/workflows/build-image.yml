@@ -1,0 +1,41 @@
+name: Build super project operator image
+
+env:
+  REGISTRY: docker.pkg.github.com
+  IMAGE_NAME: super-project
+  QUAY_REGISTRY: quay.io
+  QUAY_ORG: openshift-operators
+
+on:
+  push:
+    paths:
+      - '**/Dockerfile'
+
+jobs:
+  build:
+    name: "Build Docker image"
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build and push Docker image to  quay.io registry
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{  secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+          registry: ${{ env.QUAY_REGISTRY }}
+          repository:  ${{ env.QUAY_ORG }}/${{ env.IMAGE_NAME }}
+          tag_with_ref: true
+          tag_with_sha: true
+
+      - name: Build and push Docker image to GitHub package registry
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{  github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          repository: ${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tag_with_ref: true
+          tag_with_sha: true
