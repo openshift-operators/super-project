@@ -6,10 +6,10 @@ docker pull docker.pkg.github.com/ci-container-images/operator-sdk-dev/ansible:v
 
 if [[ $1 == "shell" ]]; then
 
-docker run -ti --rm -v $PWD:/workspace  -v $PWD/roles:/opt/ansible/roles   -v $HOME/.kube/config:/tmp/.kube/config  docker.pkg.github.com/ci-container-images/operator-sdk-dev/ansible:v0.17.0 
+docker run -ti --rm -v $PWD:/workspace  -v $PWD/roles:/opt/ansible/roles   -v $KUBECONFIG:/tmp/.kube/config  docker.pkg.github.com/ci-container-images/operator-sdk-dev/ansible:v0.17.0 
 
 else 
 
-docker run -ti --rm -v $PWD:/workspace  -v $PWD/roles:/opt/ansible/roles   -v $HOME/.kube/config:/tmp/.kube/config  docker.pkg.github.com/ci-container-images/operator-sdk-dev/ansible:v0.17.0 -c 'operator-sdk run --local'
+docker run -ti --rm -v $PWD:/workspace  -v $PWD/roles:/opt/ansible/roles   -v $KUBECONFIG:/tmp/.kube/config  docker.pkg.github.com/ci-container-images/operator-sdk-dev/ansible:v0.17.0 -c 'operator-sdk run --local'
 
 fi
