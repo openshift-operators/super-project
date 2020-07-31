@@ -4,4 +4,3 @@ RUN  pip3 install --user --upgrade openshift kubernetes hvac
 COPY watches.yaml ${HOME}/watches.yaml
 COPY roles/ ${HOME}/roles/
 
-
