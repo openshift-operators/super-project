@@ -9,7 +9,8 @@ env:
 on:
   push:
     paths:
-      - '**/Dockerfile'
+      - '**/build/Dockerfile'
+      - '**/roles/'
 
 jobs:
   build:
@@ -23,6 +24,7 @@ jobs:
       - name: Build and push Docker image to  quay.io registry
         uses: docker/build-push-action@v1
         with:
+          path: '**/build/'
           username: ${{  secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
           registry: ${{ env.QUAY_REGISTRY }}
@@ -33,6 +35,7 @@ jobs:
       - name: Build and push Docker image to GitHub package registry
         uses: docker/build-push-action@v1
         with:
+          path: '**/build/'
           username: ${{  github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.REGISTRY }}
