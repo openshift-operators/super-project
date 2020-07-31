@@ -223,7 +223,7 @@
           name: "{{ cluster_name }}_{{ meta.name }}_viewers"
           namespace: "{{ meta.name }}"
         roleRef:
-          name: admin
+          name: view
         subjects:
           - kind: Group
             name: "{{ cluster_name }}_{{ meta.name }}_viewers"
